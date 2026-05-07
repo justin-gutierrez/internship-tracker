@@ -16,7 +16,9 @@ Local Python CLI that reads your Gmail (via official API), classifies internship
    ```
 3. **Google Cloud**
    - Create a project, enable **Gmail API**.
-   - OAuth consent screen: External (or Internal if Workspace), add yourself as a **test user**.
+   - Configure the **OAuth consent screen** (APIs & Services → OAuth consent screen).
+   - If the app is in **Testing** (typical for a personal Desktop client), you **must** add every Google account whose Gmail you will scrape under **Test users**. Use the **exact** email address you sign in with in the browser when OAuth runs. If that account is not listed, Google returns **`access_denied`** and OAuth will fail.
+   - For **External** apps, add those accounts as test users; **Internal** (Google Workspace only) restricts who can use the app per your org.
    - Credentials → Create OAuth client ID → **Desktop app**.
    - Download JSON as `credentials.json` in the project root (same folder as `pyproject.toml`).
 
