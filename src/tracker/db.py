@@ -11,7 +11,42 @@ from typing import Any
 from tracker.models import Application, Status
 from tracker.status_reduce import reduce_status
 
-META_HISTORY_KEY = "gmail_history_id"
+META_HISTORY_KEY = "gmail_history_id"  # legacy single-mailbox key (migrated away on write)
+
+
+def history_meta_key_for_email(profile_email: str) -> str:
+    return f"gmail_history_id:{profile_email.strip().lower()}"
+
+
+def has_per_mailbox_history_keys(conn: sqlite3.Connection) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM meta WHERE key LIKE ? LIMIT 1",
+        ("gmail_history_id:%",),
+    ).fetchone()
+    return row is not None
+
+
+def get_gmail_history_id(conn: sqlite3.Connection, profile_email: str) -> str | None:
+    """History cursor for this mailbox; falls back to legacy key only if no per-mailbox rows yet."""
+    pe = profile_email.strip().lower()
+    if not pe:
+        return None
+    v = get_meta(conn, history_meta_key_for_email(pe))
+    if v:
+        return v
+    if has_per_mailbox_history_keys(conn):
+        return None
+    return get_meta(conn, META_HISTORY_KEY)
+
+
+def set_gmail_history_id(conn: sqlite3.Connection, profile_email: str, history_id: str) -> None:
+    """Save history id for mailbox and drop legacy key so a second inbox never reuses it."""
+    pe = profile_email.strip().lower()
+    if not pe:
+        raise ValueError("profile_email required for history")
+    set_meta(conn, history_meta_key_for_email(pe), history_id)
+    conn.execute("DELETE FROM meta WHERE key = ?", (META_HISTORY_KEY,))
+    conn.commit()
 
 
 def connect(db_path: Path) -> sqlite3.Connection:

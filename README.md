@@ -44,7 +44,11 @@ tracker scan --max-emails 300 --lookback-days 60
 # Dry run: Gmail + prefilter only, no Ollama calls
 tracker scan --dry-run
 
-# Incremental: only new messages since last scan (uses Gmail history)
+# Incremental: new messages since last scan/refresh (Gmail history) — one Excel at the end
+tracker refresh
+
+# Multiple inboxes in one refresh (comma-separated token files in .env)
+# TOKEN_PATHS=token.json,token-work.json
 tracker refresh
 
 # Export current DB to Excel without re-fetching Gmail
