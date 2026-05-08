@@ -44,7 +44,8 @@ def init_schema(conn: sqlite3.Connection) -> None:
             role TEXT,
             location TEXT,
             pay TEXT,
-            status TEXT
+            status TEXT,
+            source_account TEXT
         );
 
         CREATE INDEX IF NOT EXISTS idx_emails_thread ON emails(thread_id);
@@ -69,6 +70,15 @@ def init_schema(conn: sqlite3.Connection) -> None:
         """
     )
     conn.commit()
+    _migrate_emails_source_account(conn)
+
+
+def _migrate_emails_source_account(conn: sqlite3.Connection) -> None:
+    rows = conn.execute("PRAGMA table_info(emails)").fetchall()
+    cols = {r[1] for r in rows}
+    if cols and "source_account" not in cols:
+        conn.execute("ALTER TABLE emails ADD COLUMN source_account TEXT")
+        conn.commit()
 
 
 def get_meta(conn: sqlite3.Connection, key: str) -> str | None:
@@ -107,13 +117,15 @@ def upsert_email(
     location: str | None,
     pay: str | None,
     status: str | None,
+    source_account: str | None = None,
 ) -> None:
     conn.execute(
         """
         INSERT INTO emails (
             gmail_id, thread_id, sender, subject, received_at, snippet, body_text,
-            processed_at, classification_json, is_relevant, company, role, location, pay, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            processed_at, classification_json, is_relevant, company, role, location, pay, status,
+            source_account
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(gmail_id) DO UPDATE SET
             thread_id = excluded.thread_id,
             sender = excluded.sender,
@@ -128,7 +140,8 @@ def upsert_email(
             role = excluded.role,
             location = excluded.location,
             pay = excluded.pay,
-            status = excluded.status
+            status = excluded.status,
+            source_account = excluded.source_account
         """,
         (
             gmail_id,
@@ -146,6 +159,7 @@ def upsert_email(
             location,
             pay,
             status,
+            source_account,
         ),
     )
 

@@ -22,6 +22,7 @@ from tracker.gmail_client import (
     build_service,
     get_credentials,
     get_message_full,
+    get_profile_email,
     get_profile_history_id,
     list_history_message_ids,
     list_message_ids,
@@ -79,8 +80,8 @@ def scan_command(
 ) -> None:
     """Full scan of recent Gmail messages."""
     cred_path, token_path = _load_paths(ctx, credentials, token)
-    max_n = max_emails if max_emails is not None else int(os.environ.get("MAX_EMAILS", "1000"))
-    lookback = lookback_days if lookback_days is not None else int(os.environ.get("LOOKBACK_DAYS", "365"))
+    max_n = max_emails if max_emails is not None else int(os.environ.get("MAX_EMAILS", "300"))
+    lookback = lookback_days if lookback_days is not None else int(os.environ.get("LOOKBACK_DAYS", "60"))
     out = output or Path(os.environ.get("OUTPUT_PATH", "data/applications.xlsx"))
     dbp = db_path or Path(os.environ.get("DB_PATH", "data/tracker.db"))
     ollama_url = os.environ.get("OLLAMA_URL", "http://localhost:11434")
@@ -88,6 +89,8 @@ def scan_command(
 
     creds = get_credentials(cred_path, token_path)
     service = build_service(creds)
+    env_label = (os.environ.get("SOURCE_ACCOUNT") or "").strip()
+    source_account = env_label or get_profile_email(service)
 
     conn = dbmod.connect(dbp)
     dbmod.init_schema(conn)
@@ -118,6 +121,7 @@ def scan_command(
                 ollama_model=ollama_model,
                 dry_run=dry_run,
                 skip_if_exists=True,
+                source_account=source_account,
             )
             progress.advance(task)
 
@@ -163,6 +167,8 @@ def refresh_command(
 
     creds = get_credentials(cred_path, token_path)
     service = build_service(creds)
+    env_label = (os.environ.get("SOURCE_ACCOUNT") or "").strip()
+    source_account = env_label or get_profile_email(service)
 
     try:
         new_ids = list_history_message_ids(service, start_id)
@@ -196,6 +202,7 @@ def refresh_command(
                 ollama_model=ollama_model,
                 dry_run=dry_run,
                 skip_if_exists=True,
+                source_account=source_account,
             )
             progress.advance(task)
 

@@ -22,6 +22,7 @@ def process_email(
     ollama_model: str,
     dry_run: bool,
     skip_if_exists: bool = True,
+    source_account: str | None = None,
 ) -> str:
     """
     Persist one message and optionally classify with Ollama.
@@ -51,6 +52,7 @@ def process_email(
             location=None,
             pay=None,
             status=None,
+            source_account=source_account,
         )
         conn.commit()
         return "filtered"
@@ -73,6 +75,7 @@ def process_email(
             location=None,
             pay=None,
             status=None,
+            source_account=source_account,
         )
         conn.commit()
         return "dry_run"
@@ -119,6 +122,7 @@ def process_email(
             location=None,
             pay=None,
             status=c.status,
+            source_account=source_account,
         )
         conn.commit()
         return "irrelevant"
@@ -143,6 +147,7 @@ def process_email(
         location=c.location,
         pay=c.pay,
         status=c.status,
+        source_account=source_account,
     )
     conn.commit()
 

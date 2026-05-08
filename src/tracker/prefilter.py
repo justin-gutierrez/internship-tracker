@@ -21,6 +21,9 @@ ATS_DOMAIN_HINTS = (
     "@jobvite.com",
     "@bamboohr.com",
     "@recruitee.com",
+    "@joinhandshake.com",
+    "@email.joinhandshake.com",
+    "@mail.joinhandshake.com",
 )
 
 # Keywords in subject/snippet/body (case-insensitive)
@@ -30,7 +33,7 @@ KEYWORD_RE = re.compile(
     r"update on your application|status of your application|next steps|interview|"
     r"phone screen|scheduling|offer|congratulations|unfortunately|regret to inform|"
     r"not moving forward|not selected|position has been filled|hiring team|"
-    r"recruiting|talent acquisition)\b",
+    r"recruiting|talent acquisition|handshake)\b",
     re.I,
 )
 

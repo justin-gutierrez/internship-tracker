@@ -205,6 +205,13 @@ def get_profile_history_id(service) -> str:
     return str(hid)
 
 
+def get_profile_email(service) -> str | None:
+    """Mailbox address for the authorized user (users.getProfile)."""
+    prof = service.users().getProfile(userId="me").execute()
+    addr = prof.get("emailAddress")
+    return str(addr).strip() if addr else None
+
+
 def list_history_message_ids(service, start_history_id: str) -> list[str]:
     """Return message ids from history since start_history_id (incremental)."""
     user_id = "me"

@@ -39,7 +39,7 @@ cp .env.example .env        # optional; edit defaults
 tracker scan
 
 # Limit scope
-tracker scan --max-emails 500 --lookback-days 180
+tracker scan --max-emails 300 --lookback-days 60
 
 # Dry run: Gmail + prefilter only, no Ollama calls
 tracker scan --dry-run
